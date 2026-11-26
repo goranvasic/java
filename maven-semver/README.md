@@ -1,6 +1,7 @@
 # Maven SemVer
 
 [![Maven SemVer CI](https://github.com/goranvasic/java/actions/workflows/maven-semver.yml/badge.svg?branch=main)](https://github.com/goranvasic/java/actions/workflows/maven-semver.yml)
+[![Latest stable release](https://img.shields.io/github/v/release/goranvasic/java?display_name=tag&label=latest%20release)](https://github.com/goranvasic/java/releases/latest)
 
 A Java 25 application that prints `Hello World` and exits.
 
