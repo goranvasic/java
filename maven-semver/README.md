@@ -34,20 +34,17 @@ docker run --rm maven-semver:local
 
 ## Publish a GitHub release
 
-Choose an unused `vMAJOR.MINOR.PATCH` tag. For example, to release the current
-commit on GitHub's `main` as `v1.0.1`, run the following commands in this
-repository.
+Choose an unused `vMAJOR.MINOR.PATCH` tag. To release the current commit on
+GitHub's `main`, run these commands with your chosen version in place of
+`v1.2.0`.
 
 ```sh
 git fetch origin
-git tag -a v1.0.1 -m "Release maven-semver 1.0.1" origin/main
-git push origin refs/tags/v1.0.1
+git tag -a v1.2.0 -m "Release maven-semver 1.2.0" origin/main
+git push origin refs/tags/v1.2.0
 ```
 
 In the repository's **Actions** tab, follow the **Maven SemVer Release** run for
-the tag. A successful run publishes `v1.0.1` under **Releases** with
-`maven-semver-1.0.1.jar` attached. A tag such as `v1.1.0-rc.1` publishes a
-prerelease.
-
-The release workflow also builds a Docker image from the release JAR on the
-Actions runner without pushing it to a registry.
+the tag. For `v1.2.0`, the workflow pushes `ghcr.io/goranvasic/maven-semver:1.2.0`
+and adds the image reference to the GitHub release notes. A tag such as
+`v1.2.0-rc.1` publishes a prerelease and tags the image `1.2.0-rc.1`.

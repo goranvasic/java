@@ -11,6 +11,7 @@ jobs:
     runs-on: ubuntu-latest
     permissions:
       contents: write
+      packages: write
     steps:
       - name: Validate release tag
         id: version
@@ -40,7 +41,15 @@ jobs:
           RELEASE_VERSION: ${{ steps.version.outputs.version }}
         run: mvn --batch-mode --no-transfer-progress --show-version "-Drevision=$RELEASE_VERSION" verify
 
-      - name: Build Docker image
+      - name: Log in to GitHub Container Registry
+        uses: docker/login-action@8aa5831fb8d48d8f76594c7ddde61ae58019f550 # v4.8.0
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Build and push Docker image
+        id: image
         working-directory: maven-semver
         shell: bash
         env:
@@ -49,23 +58,28 @@ jobs:
           # Docker tags disallow '+' and are limited to 128 characters.
           image_tag="${RELEASE_VERSION//+/_}"
           if (( ${#image_tag} > 128 )); then
-            image_tag="$GITHUB_SHA"
+            version_hash=$(printf '%s' "$RELEASE_VERSION" | sha256sum)
+            image_tag="sha256-${version_hash%% *}"
           fi
+          image="ghcr.io/goranvasic/maven-semver:$image_tag"
           docker build \
             --build-arg "JAR_FILE=target/maven-semver-$RELEASE_VERSION.jar" \
+            --label "org.opencontainers.image.source=$GITHUB_SERVER_URL/$GITHUB_REPOSITORY" \
             --label "org.opencontainers.image.version=$RELEASE_VERSION" \
-            --tag "maven-semver:$image_tag" \
+            --tag "$image" \
             .
+          docker push "$image"
+          printf 'reference=%s\n' "$image" >> "$GITHUB_OUTPUT"
 
       - name: Publish GitHub release
         shell: bash
         env:
           GH_TOKEN: ${{ github.token }}
+          IMAGE_REFERENCE: ${{ steps.image.outputs.reference }}
           RELEASE_VERSION: ${{ steps.version.outputs.version }}
         run: |
-          jar="maven-semver/target/maven-semver-$RELEASE_VERSION.jar"
           args=(--repo "$GITHUB_REPOSITORY" --verify-tag --title "$GITHUB_REF_NAME" --generate-notes)
           if [[ "${RELEASE_VERSION%%+*}" == *-* ]]; then
             args+=(--prerelease)
           fi
-          gh release create "$GITHUB_REF_NAME" "$jar" "${args[@]}"
+          gh release create "$GITHUB_REF_NAME" "${args[@]}" --notes "Container image \`$IMAGE_REFERENCE\`."
