@@ -21,6 +21,17 @@ java -jar target/maven-semver-1.0.0.jar
 
 The local JAR defaults to version `1.0.0`, as set in [`pom.xml`](pom.xml).
 
+## Build and run with Docker
+
+Start Docker in Linux container mode, then run these commands from the
+`maven-semver` directory.
+
+```sh
+mvn verify
+docker build --tag maven-semver:local .
+docker run --rm maven-semver:local
+```
+
 ## Publish a GitHub release
 
 Choose an unused `vMAJOR.MINOR.PATCH` tag. For example, to release the current
@@ -37,3 +48,6 @@ In the repository's **Actions** tab, follow the **Maven SemVer Release** run for
 the tag. A successful run publishes `v1.0.1` under **Releases** with
 `maven-semver-1.0.1.jar` attached. A tag such as `v1.1.0-rc.1` publishes a
 prerelease.
+
+The release workflow also builds a Docker image from the release JAR on the
+Actions runner without pushing it to a registry.
