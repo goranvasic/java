@@ -1,5 +1,7 @@
 # Maven SemVer
 
+[![Maven SemVer CI](https://github.com/goranvasic/java/actions/workflows/maven-semver.yml/badge.svg?branch=main)](https://github.com/goranvasic/java/actions/workflows/maven-semver.yml)
+
 A Java 25 application that prints `Hello World` and exits.
 
 ## Build and run locally
