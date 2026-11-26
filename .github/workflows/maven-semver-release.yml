@@ -40,6 +40,23 @@ jobs:
           RELEASE_VERSION: ${{ steps.version.outputs.version }}
         run: mvn --batch-mode --no-transfer-progress --show-version "-Drevision=$RELEASE_VERSION" verify
 
+      - name: Build Docker image
+        working-directory: maven-semver
+        shell: bash
+        env:
+          RELEASE_VERSION: ${{ steps.version.outputs.version }}
+        run: |
+          # Docker tags disallow '+' and are limited to 128 characters.
+          image_tag="${RELEASE_VERSION//+/_}"
+          if (( ${#image_tag} > 128 )); then
+            image_tag="$GITHUB_SHA"
+          fi
+          docker build \
+            --build-arg "JAR_FILE=target/maven-semver-$RELEASE_VERSION.jar" \
+            --label "org.opencontainers.image.version=$RELEASE_VERSION" \
+            --tag "maven-semver:$image_tag" \
+            .
+
       - name: Publish GitHub release
         shell: bash
         env:
